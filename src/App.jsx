@@ -26,85 +26,76 @@ const App = () => {
     setFile(e.target.files[0]);
   };
 
-  // Handle file upload and model training
-  const handleTrain = async () => {
-    if (!file) {
-      setError("Please upload a CSV file.");
-      return;
-    }
+  const BACKEND_URL = "https://iitk.onrender.com"; // Replace with your actual Render URL
 
-    setLoading(true);
-    setError(null);
-    setResults(null);
-    setRocAucPlot(null); // Reset ROC plot when starting a new training
+const handleTrain = async () => {
+  if (!file) {
+    setError("Please upload a CSV file.");
+    return;
+  }
 
-    const formData = new FormData();
-    formData.append("file", file);
+  setLoading(true);
+  setError(null);
+  setResults(null);
+  setRocAucPlot(null); 
 
-    try {
-      const response = await axios.post(
-        "https://iitk.onrender.com",
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-          timeout: 30000,
-        }
-      );
+  const formData = new FormData();
+  formData.append("file", file);
 
-      setResults(response.data.model_results);
-      setRocAucPlot(response.data.roc_auc_plot); // Set the ROC-AUC plot from response
-    } catch (err) {
-      setError(err.response?.data?.error || "Unexpected error occurred.");
-    } finally {
-      setLoading(false);
-    }
+  try {
+    const response = await axios.post(
+      `${BACKEND_URL}/train`, // Use Render backend URL
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+        timeout: 30000,
+      }
+    );
+
+    setResults(response.data.model_results);
+    setRocAucPlot(response.data.roc_auc_plot); 
+  } catch (err) {
+    setError(err.response?.data?.error || "Unexpected error occurred.");
+  } finally {
+    setLoading(false);
+  }
+};
+
+const handleSubmitForm = async (e) => {
+  e.preventDefault();
+
+  const formattedData = {
+    ...formData,
+    default_profile: parseInt(formData.default_profile, 10),
+    default_profile_image: parseInt(formData.default_profile_image, 10),
+    favourites_count: parseInt(formData.favourites_count, 10),
+    followers_count: parseInt(formData.followers_count, 10),
+    friends_count: parseInt(formData.friends_count, 10),
+    statuses_count: parseInt(formData.statuses_count, 10),
+    verified: parseInt(formData.verified, 10),
+    geo_enabled: parseInt(formData.geo_enabled, 10),
+    average_tweets_per_day: parseFloat(formData.average_tweets_per_day),
+    account_age_days: parseInt(formData.account_age_days, 10),
   };
 
-  // Handle form data change
-  const handleFormChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
+  try {
+    const response = await axios.post(
+      `${BACKEND_URL}/predict`, // Use Render backend URL
+      formattedData,
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+
+    setResults({
+      ...results,
+      prediction: response.data.prediction,
     });
-  };
+  } catch (err) {
+    setError("Error during prediction. Please try again.");
+  }
+};
 
-  // Handle form submission for bot prediction
-  const handleSubmitForm = async (e) => {
-    e.preventDefault();
-
-    // Ensure the form data is converted to the right types
-    const formattedData = {
-      ...formData,
-      default_profile: parseInt(formData.default_profile, 10),
-      default_profile_image: parseInt(formData.default_profile_image, 10),
-      favourites_count: parseInt(formData.favourites_count, 10),
-      followers_count: parseInt(formData.followers_count, 10),
-      friends_count: parseInt(formData.friends_count, 10),
-      statuses_count: parseInt(formData.statuses_count, 10),
-      verified: parseInt(formData.verified, 10),
-      geo_enabled: parseInt(formData.geo_enabled, 10),
-      average_tweets_per_day: parseFloat(formData.average_tweets_per_day),
-      account_age_days: parseInt(formData.account_age_days, 10),
-    };
-
-    try {
-      const response = await axios.post(
-        "http://127.0.0.1:5000/predict",
-        formattedData,
-        {
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-
-      setResults({
-        ...results,
-        prediction: response.data.prediction,
-      });
-    } catch (err) {
-      setError("Error during prediction. Please try again.");
-    }
-  };
 
   return (
     <div className="container">
