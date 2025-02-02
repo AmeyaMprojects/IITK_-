@@ -26,7 +26,7 @@ const App = () => {
     setFile(e.target.files[0]);
   };
 
-  const BACKEND_URL = "https://iitk.onrender.com"; // Replace with your actual Render URL
+  const BACKEND_URL = "https://iitk.onrender.com/"; // Replace with your actual Render URL
 
 const handleTrain = async () => {
   if (!file) {
@@ -102,7 +102,7 @@ const handleSubmitForm = async (e) => {
       <h1>Train and Predict Bot Detection</h1>
 
       {/* File upload input */}
-      <div classname="file-upload-container">
+      <div className="file-upload-container">
         <input
           type="file"
           id="file-upload"
