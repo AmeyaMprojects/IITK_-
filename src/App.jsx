@@ -43,7 +43,7 @@ const App = () => {
 
     try {
       const response = await axios.post(
-        "http://127.0.0.1:5000/train",
+        "https://iitk.onrender.com",
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
